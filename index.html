@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TokoAMBACONG</title>
+<title>TokoKita</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -11,8 +11,8 @@
 
   header { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #ccfbf1; z-index: 60; }
   .head { max-width: 1100px; margin: 0 auto; padding: 14px 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-  .logo { font-size: 20px; font-weight: 800; color: #0f766e; }
-  .search { flex: 1; min-width: 140px; padding: 9px 14px; border: 1px solid #ccfbf1; border-radius: 999px; outline: none; font-size: 14px; }
+  .logo { font-size: 20px; font-weight: 800; color: #0f766e; white-space: nowrap; }
+  .search { flex: 1; min-width: 120px; padding: 9px 14px; border: 1px solid #ccfbf1; border-radius: 999px; outline: none; font-size: 14px; }
   .search:focus { border-color: #0d9488; }
 
   .btn { border: none; cursor: pointer; padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; font-family: inherit; transition: .2s; }
@@ -21,10 +21,12 @@
   .btn-light { background: #ccfbf1; color: #0f766e; }
   .btn-light:hover { background: #b2f5ea; }
   .btn-sm { padding: 7px 11px; font-size: 12px; }
-  .btn-red { background: #fee2e2; color: #dc2626; }
+
+  .cart-btn { position: relative; }
+  .badge { position: absolute; top: -6px; right: -6px; background: #0f766e; color: #fff; font-size: 11px; font-weight: 700; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; display: grid; place-items: center; }
 
   .wrap { max-width: 1100px; margin: 20px auto; padding: 0 20px; }
-  .hero { background: linear-gradient(135deg, #0d9488, #0f766e); border-radius: 18px; padding: 26px; color: #fff; display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .hero { background: linear-gradient(135deg, #0d9488, #0f766e); border-radius: 18px; padding: 26px; color: #fff; }
   .hero h1 { font-size: 22px; margin-bottom: 5px; }
   .hero p { font-size: 13px; opacity: .9; }
 
@@ -39,29 +41,43 @@
   .body { padding: 12px; }
   .body h3 { font-size: 14px; margin-bottom: 5px; }
   .body p { font-size: 12px; color: #64748b; line-height: 1.4; height: 34px; overflow: hidden; }
-  .actions { display: flex; gap: 5px; margin-top: 8px; }
-  .actions .btn-teal { flex: 1; justify-content: center; }
+  .body .btn-teal { width: 100%; justify-content: center; margin-top: 8px; }
 
-  .info { text-align: center; padding: 50px 20px; color: #64748b; font-size: 14px; }
+  .info { text-align: center; padding: 50px 20px; color: #64748b; font-size: 14px; grid-column: 1/-1; }
   .err { text-align: center; padding: 40px 20px; color: #dc2626; font-size: 13px; background: #fef2f2; border-radius: 12px; margin-top: 20px; word-break: break-word; }
 
   .overlay { position: fixed; inset: 0; background: rgba(19,78,74,.5); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 100; }
   .overlay.on { display: flex; }
   .modal { background: #fff; border-radius: 18px; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; padding: 22px; }
-  .modal h2 { font-size: 18px; color: #0f766e; margin-bottom: 14px; }
 
-  .field { margin-bottom: 12px; }
-  .field label { display: block; font-size: 13px; font-weight: 600; color: #0f766e; margin-bottom: 5px; }
-  .field input, .field textarea { width: 100%; padding: 10px 12px; border: 1px solid #ccfbf1; border-radius: 9px; font-size: 14px; font-family: inherit; outline: none; }
-  .field input:focus, .field textarea:focus { border-color: #0d9488; }
-  .field textarea { resize: vertical; }
-  .field small { color: #64748b; font-size: 11px; }
-  #prev { width: 100%; height: 140px; object-fit: cover; border-radius: 10px; margin-top: 8px; display: none; border: 1px solid #ccfbf1; }
-
-  .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+  /* Cart panel */
+  .cart-panel { position: fixed; top: 0; right: 0; height: 100%; width: 350px; max-width: 92vw; background: #fff; z-index: 200; display: flex; flex-direction: column; transform: translateX(105%); transition: .3s; box-shadow: -8px 0 30px rgba(13,148,136,.15); }
+  .cart-panel.on { transform: translateX(0); }
+  .cart-head { padding: 18px; border-bottom: 1px solid #ccfbf1; display: flex; justify-content: space-between; align-items: center; }
+  .cart-head h2 { font-size: 16px; color: #0f766e; }
+  .cart-items { flex: 1; overflow-y: auto; padding: 14px 18px; }
+  .cart-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+  .cart-item img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; }
+  .ci-info { flex: 1; min-width: 0; }
+  .ci-info h4 { font-size: 13px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ci-info .p { font-size: 12px; color: #64748b; }
+  .qty { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .qty button { width: 22px; height: 22px; border-radius: 6px; border: 1px solid #ccfbf1; background: #fff; cursor: pointer; color: #0f766e; font-weight: 700; }
+  .qty button:hover { background: #ccfbf1; }
+  .qty span { font-size: 13px; font-weight: 700; min-width: 18px; text-align: center; }
+  .ci-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; }
+  .ci-right strong { font-size: 13px; }
+  .ci-right .rm { background: none; border: none; color: #dc2626; font-size: 11px; font-weight: 600; cursor: pointer; padding: 0; }
+  .cart-foot { padding: 16px 18px; border-top: 1px solid #ccfbf1; background: #f8fafc; }
+  .cart-total { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 12px; }
+  .cart-total strong { font-size: 18px; color: #0f766e; }
+  .cart-foot .btn { width: 100%; }
 
   #toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 100px); background: #0f766e; color: #fff; padding: 11px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; opacity: 0; transition: .3s; z-index: 999; max-width: 90vw; text-align: center; }
   #toast.on { transform: translate(-50%, 0); opacity: 1; }
+
+  #cartOverlay { position: fixed; inset: 0; background: rgba(19,78,74,.5); display: none; z-index: 150; }
+  #cartOverlay.on { display: block; }
 </style>
 </head>
 <body>
@@ -70,51 +86,19 @@
   <div class="head">
     <div class="logo">TokAMBACONG</div>
     <input type="text" id="cari" class="search" placeholder="Cari produk...">
-    <button class="btn btn-teal" id="btnTambah">Tambah Produk</button>
+    <button class="btn btn-teal cart-btn" id="btnCart">
+      Keranjang <span class="badge" id="badge">0</span>
+    </button>
   </div>
 </header>
 
 <div class="wrap">
   <div class="hero">
-    <div>
-      <h1>BELI NGENTOT GA BELI MATI LU</h1>
-      <p>BELANJA DITOKO AMBACONG GRATIS MUWANI😘🤭😋😜</p>
-    </div>
+    <h1>BELI NGENTOT GA BELI MATI LU</h1>
+    <p>BELANJA DITOKO AMBACONG GRATIS MUWANI</p>
   </div>
   <div id="grid" class="grid"></div>
   <div id="err" class="err" style="display:none"></div>
-</div>
-
-<!-- Modal Form -->
-<div class="overlay" id="formModal">
-  <div class="modal">
-    <h2 id="formTitle">Tambah Produk</h2>
-    <form id="form">
-      <div class="field">
-        <label>Nama Produk</label>
-        <input type="text" id="nama" required placeholder="Contoh: Kaos Polos">
-      </div>
-      <div class="field">
-        <label>Harga (Rp)</label>
-        <input type="number" id="harga" required min="0" placeholder="85000">
-      </div>
-      <div class="field">
-        <label>Foto (URL)</label>
-        <input type="url" id="gambar" placeholder="https://...">
-        <small>Atau upload file di bawah</small>
-        <input type="file" id="file" accept="image/*" style="margin-top:6px">
-        <img id="prev" alt="">
-      </div>
-      <div class="field">
-        <label>Deskripsi</label>
-        <textarea id="desk" rows="3" placeholder="Jelaskan produk..."></textarea>
-      </div>
-      <div class="row">
-        <button type="button" class="btn btn-light" id="btnBatal">Batal</button>
-        <button type="submit" class="btn btn-teal" id="btnSimpan">Simpan</button>
-      </div>
-    </form>
-  </div>
 </div>
 
 <!-- Modal Detail -->
@@ -124,24 +108,40 @@
     <div style="font-size:22px;font-weight:800;color:#0f766e;margin:12px 0 4px" id="dHarga"></div>
     <div style="font-size:18px;font-weight:700" id="dNama"></div>
     <p style="font-size:13px;color:#64748b;line-height:1.6;margin-top:8px" id="dDesk"></p>
-    <div class="row">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
       <button class="btn btn-light" id="btnTutupDetail">Tutup</button>
+      <button class="btn btn-teal" id="btnBeliDetail">Beli</button>
     </div>
   </div>
 </div>
 
+<!-- Cart Panel -->
+<div id="cartOverlay"></div>
+<aside class="cart-panel" id="cartPanel">
+  <div class="cart-head">
+    <h2>Keranjang Belanja</h2>
+    <button class="btn btn-light" id="btnTutupCart">Tutup</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-foot">
+    <div class="cart-total">
+      <span>Total</span>
+      <strong id="cartTotal">Rp 0</strong>
+    </div>
+    <button class="btn btn-teal" id="btnCheckout">Checkout</button>
+  </div>
+</aside>
+
 <div id="toast"></div>
 
 <script>
-/* ============ ISI URL DAN KEY DI SINI ============ */
+/* ============ KONFIG SUPABASE ============ */
 const SUPABASE_URL = 'https://mtjdkivqcltdbgdauapl.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10amRraXZxY2x0ZGJnZGF1YXBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4NDUzOTEsImV4cCI6MjEwNjQyMTM5MX0.chzAnuC2SEAVmCw-R6cfLWreYftJq8TozCrQ3qVAYTQ';
-/* ================================================= */
 
-// Cek library Supabase
 if (typeof window.supabase === 'undefined') {
   document.getElementById('err').style.display = 'block';
-  document.getElementById('err').textContent = 'Library Supabase gagal dimuat. Cek koneksi internet atau matikan adblocker, lalu refresh.';
+  document.getElementById('err').textContent = 'Library Supabase gagal dimuat. Cek koneksi internet, lalu refresh.';
   throw new Error('Supabase CDN tidak dimuat');
 }
 
@@ -163,8 +163,8 @@ function placeholder(text) {
 }
 
 let produkList = [];
-let editId = null;
-let imgVal = '';
+let cart = {};
+let detailId = null;
 
 let toastTimer;
 function toast(msg) {
@@ -176,19 +176,14 @@ function toast(msg) {
 }
 
 function showError(msg) {
-  const e = $('#err');
-  e.style.display = 'block';
-  e.textContent = msg;
-}
-
-function hideError() {
-  $('#err').style.display = 'none';
+  $('#err').style.display = 'block';
+  $('#err').textContent = msg;
 }
 
 /* ============ LOAD PRODUK ============ */
 async function loadProduk() {
   $('#grid').innerHTML = '<div class="info">Memuat produk...</div>';
-  hideError();
+  $('#err').style.display = 'none';
 
   const { data, error } = await db.from('products').select('*').order('created_at', { ascending: false });
 
@@ -218,7 +213,7 @@ function renderProduk() {
   );
 
   if (!produkList.length) {
-    $('#grid').innerHTML = '<div class="info">Belum ada produk.<br>Klik "Tambah Produk" untuk mulai.</div>';
+    $('#grid').innerHTML = '<div class="info">Belum ada produk.</div>';
     return;
   }
   if (!list.length) {
@@ -235,10 +230,7 @@ function renderProduk() {
       <div class="body">
         <h3>${esc(p.name)}</h3>
         <p>${esc(p.desc || 'Tanpa deskripsi')}</p>
-        <div class="actions">
-          <button class="btn btn-teal btn-sm" data-act="edit">Edit</button>
-          <button class="btn btn-light btn-sm" data-act="hapus">Hapus</button>
-        </div>
+        <button class="btn btn-teal btn-sm" data-act="beli">Beli</button>
       </div>
     </div>
   `).join('');
@@ -251,117 +243,18 @@ $('#grid').addEventListener('click', (e) => {
   const id = card.dataset.id;
   const act = e.target.dataset.act;
 
-  if (act === 'edit') { bukaForm(id); }
-  else if (act === 'hapus') { hapusProduk(id); }
-  else { bukaDetail(id); }
-});
-
-/* ============ FORM ============ */
-function bukaForm(id) {
-  editId = id || null;
-  const p = id ? produkList.find(x => x.id === id) : null;
-
-  $('#formTitle').textContent = p ? 'Edit Produk' : 'Tambah Produk';
-  $('#nama').value = p ? p.name : '';
-  $('#harga').value = p ? p.price : '';
-  $('#desk').value = p ? p.desc : '';
-  $('#gambar').value = (p && /^https?:/i.test(p.image)) ? p.image : '';
-  $('#file').value = '';
-  imgVal = p ? p.image : '';
-
-  if (p) {
-    $('#prev').src = p.image;
-    $('#prev').style.display = 'block';
+  if (act === 'beli') {
+    addCart(id);
   } else {
-    $('#prev').style.display = 'none';
-  }
-
-  $('#formModal').classList.add('on');
-  setTimeout(() => $('#nama').focus(), 100);
-}
-
-function tutupForm() {
-  $('#formModal').classList.remove('on');
-  editId = null;
-}
-
-$('#gambar').addEventListener('input', () => {
-  const v = $('#gambar').value.trim();
-  if (v) {
-    imgVal = v;
-    $('#prev').src = v;
-    $('#prev').style.display = 'block';
+    bukaDetail(id);
   }
 });
-
-$('#file').addEventListener('change', () => {
-  const f = $('#file').files[0];
-  if (!f) return;
-  if (f.size > 1024*1024) { toast('Gambar maks 1MB. Pakai URL saja.'); return; }
-  const r = new FileReader();
-  r.onload = (e) => {
-    imgVal = e.target.result;
-    $('#gambar').value = '';
-    $('#prev').src = imgVal;
-    $('#prev').style.display = 'block';
-  };
-  r.readAsDataURL(f);
-});
-
-$('#form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const name = $('#nama').value.trim();
-  const price = Number($('#harga').value);
-  const desc = $('#desk').value.trim();
-  const image = imgVal || placeholder('Produk');
-
-  if (!name) return toast('Nama wajib diisi');
-  if (isNaN(price) || price < 0) return toast('Harga tidak valid');
-
-  $('#btnSimpan').disabled = true;
-  $('#btnSimpan').textContent = 'Menyimpan...';
-
-  let error;
-  if (editId) {
-    ({ error } = await db.from('products').update({ name, price, description: desc, image }).eq('id', editId));
-  } else {
-    ({ error } = await db.from('products').insert([{ name, price, description: desc, image }]));
-  }
-
-  $('#btnSimpan').disabled = false;
-  $('#btnSimpan').textContent = 'Simpan';
-
-  if (error) {
-    console.error(error);
-    toast('Gagal: ' + error.message);
-    return;
-  }
-
-  toast(editId ? 'Produk diperbarui' : 'Produk ditambahkan');
-  tutupForm();
-  await loadProduk();
-});
-
-$('#btnBatal').addEventListener('click', tutupForm);
-
-/* ============ HAPUS ============ */
-async function hapusProduk(id) {
-  const p = produkList.find(x => x.id === id);
-  if (!p) return;
-  if (!confirm('Hapus produk "' + p.name + '"?')) return;
-
-  const { error } = await db.from('products').delete().eq('id', id);
-  if (error) { toast('Gagal hapus: ' + error.message); return; }
-
-  toast('Produk dihapus');
-  await loadProduk();
-}
 
 /* ============ DETAIL ============ */
 function bukaDetail(id) {
   const p = produkList.find(x => x.id === id);
   if (!p) return;
+  detailId = id;
   $('#dGambar').src = p.image;
   $('#dNama').textContent = p.name;
   $('#dHarga').textContent = rp(p.price);
@@ -370,21 +263,126 @@ function bukaDetail(id) {
 }
 
 $('#btnTutupDetail').addEventListener('click', () => $('#detailModal').classList.remove('on'));
+$('#btnBeliDetail').addEventListener('click', () => {
+  if (detailId) { addCart(detailId); $('#detailModal').classList.remove('on'); }
+});
 
-/* ============ TOMBOL TAMBAH (PENTING) ============ */
-$('#btnTambah').addEventListener('click', () => bukaForm(null));
+/* ============ CART ============ */
+function loadCart() {
+  try { cart = JSON.parse(localStorage.getItem('tokokita_cart')) || {}; } catch (e) { cart = {}; }
+}
+function saveCart() {
+  try { localStorage.setItem('tokokita_cart', JSON.stringify(cart)); } catch (e) {}
+}
+
+function addCart(id) {
+  const p = produkList.find(x => x.id === id);
+  if (!p) return;
+  cart[id] = (cart[id] || 0) + 1;
+  saveCart();
+  renderCart();
+  toast('"' + p.name + '" masuk keranjang');
+}
+
+function changeQty(id, d) {
+  if (!cart[id]) return;
+  cart[id] += d;
+  if (cart[id] <= 0) delete cart[id];
+  saveCart();
+  renderCart();
+}
+
+function removeCart(id) {
+  delete cart[id];
+  saveCart();
+  renderCart();
+}
+
+function renderCart() {
+  const items = Object.entries(cart)
+    .map(([id, qty]) => ({ p: produkList.find(x => x.id === id), qty }))
+    .filter(x => x.p);
+
+  const totalQty = items.reduce((a, b) => a + b.qty, 0);
+  const totalPrice = items.reduce((a, b) => a + b.p.price * b.qty, 0);
+
+  $('#badge').textContent = totalQty;
+  $('#cartTotal').textContent = rp(totalPrice);
+
+  const box = $('#cartItems');
+  if (!items.length) {
+    box.innerHTML = '<div style="text-align:center;padding:40px 10px;color:#64748b;font-size:13px">Keranjang masih kosong</div>';
+    return;
+  }
+
+  box.innerHTML = items.map(({ p, qty }) => `
+    <div class="cart-item">
+      <img src="${esc(p.image)}" alt="">
+      <div class="ci-info">
+        <h4>${esc(p.name)}</h4>
+        <div class="p">${rp(p.price)}</div>
+        <div class="qty">
+          <button data-q="-1" data-id="${p.id}">-</button>
+          <span>${qty}</span>
+          <button data-q="1" data-id="${p.id}">+</button>
+        </div>
+      </div>
+      <div class="ci-right">
+        <strong>${rp(p.price * qty)}</strong>
+        <button class="rm" data-rm="${p.id}">Hapus</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+$('#cartItems').addEventListener('click', (e) => {
+  const qBtn = e.target.closest('[data-q]');
+  const rmBtn = e.target.closest('[data-rm]');
+  if (qBtn) changeQty(qBtn.dataset.id, Number(qBtn.dataset.q));
+  else if (rmBtn) removeCart(rmBtn.dataset.rm);
+});
+
+$('#btnCart').addEventListener('click', () => {
+  $('#cartPanel').classList.add('on');
+  $('#cartOverlay').classList.add('on');
+});
+$('#btnTutupCart').addEventListener('click', () => {
+  $('#cartPanel').classList.remove('on');
+  $('#cartOverlay').classList.remove('on');
+});
+$('#cartOverlay').addEventListener('click', () => {
+  $('#cartPanel').classList.remove('on');
+  $('#cartOverlay').classList.remove('on');
+});
+
+$('#btnCheckout').addEventListener('click', () => {
+  const items = Object.entries(cart).filter(([id]) => produkList.find(x => x.id === id));
+  const totalQty = items.reduce((a, [,q]) => a + q, 0);
+  if (!totalQty) return toast('Keranjang masih kosong');
+
+  const total = items.reduce((sum, [id, qty]) => {
+    const p = produkList.find(x => x.id === id);
+    return sum + (p ? p.price * qty : 0);
+  }, 0);
+
+  alert('Checkout Berhasil!\n\nTotal item: ' + totalQty + '\nTotal bayar: ' + rp(total));
+  cart = {};
+  saveCart();
+  renderCart();
+  $('#cartPanel').classList.remove('on');
+  $('#cartOverlay').classList.remove('on');
+});
 
 /* ============ SEARCH ============ */
 $('#cari').addEventListener('input', renderProduk);
 
-/* ============ TUTUP MODAL ============ */
-document.querySelectorAll('.overlay').forEach(ov => {
-  ov.addEventListener('click', (e) => {
-    if (e.target === ov) ov.classList.remove('on');
-  });
+/* ============ TUTUP MODAL DETAIL ============ */
+$('#detailModal').addEventListener('click', (e) => {
+  if (e.target === $('#detailModal')) $('#detailModal').classList.remove('on');
 });
 
 /* ============ MULAI ============ */
+loadCart();
 loadProduk();
 </script>
 </body>
