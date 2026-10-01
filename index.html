@@ -195,7 +195,7 @@ async function loadProduk() {
   }
 
   produkList = (data || []).map(p => ({
-    id: p.id,
+    id: String(p.id), // <-- FIX: Konversi ID jadi string
     name: p.name,
     price: p.price,
     image: p.image || placeholder('Produk'),
@@ -252,7 +252,7 @@ $('#grid').addEventListener('click', (e) => {
 
 /* ============ DETAIL ============ */
 function bukaDetail(id) {
-  const p = produkList.find(x => x.id === id);
+  const p = produkList.find(x => String(x.id) === String(id));
   if (!p) return;
   detailId = id;
   $('#dGambar').src = p.image;
@@ -276,7 +276,7 @@ function saveCart() {
 }
 
 function addCart(id) {
-  const p = produkList.find(x => x.id === id);
+  const p = produkList.find(x => String(x.id) === String(id));
   if (!p) return;
   cart[id] = (cart[id] || 0) + 1;
   saveCart();
@@ -300,7 +300,7 @@ function removeCart(id) {
 
 function renderCart() {
   const items = Object.entries(cart)
-    .map(([id, qty]) => ({ p: produkList.find(x => x.id === id), qty }))
+    .map(([id, qty]) => ({ p: produkList.find(x => String(x.id) === String(id)), qty }))
     .filter(x => x.p);
 
   const totalQty = items.reduce((a, b) => a + b.qty, 0);
@@ -356,12 +356,12 @@ $('#cartOverlay').addEventListener('click', () => {
 });
 
 $('#btnCheckout').addEventListener('click', () => {
-  const items = Object.entries(cart).filter(([id]) => produkList.find(x => x.id === id));
+  const items = Object.entries(cart).filter(([id]) => produkList.find(x => String(x.id) === String(id)));
   const totalQty = items.reduce((a, [,q]) => a + q, 0);
   if (!totalQty) return toast('Keranjang masih kosong');
 
   const total = items.reduce((sum, [id, qty]) => {
-    const p = produkList.find(x => x.id === id);
+    const p = produkList.find(x => String(x.id) === String(id));
     return sum + (p ? p.price * qty : 0);
   }, 0);
 
