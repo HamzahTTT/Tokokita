@@ -95,11 +95,59 @@
     display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
   }
   .logo {
-    font-size: 20px; font-weight: 800;
-    color: #0f766e;
-    white-space: nowrap;
-    letter-spacing: -.3px;
-  }
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -.3px;
+  white-space: nowrap;
+  display: inline-flex;
+  user-select: none;
+}
+
+.logo span {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    #0f766e 0%,
+    #14b8a6 15%,
+    #5eead4 30%,
+    #99f6e4 45%,
+    #5eead4 60%,
+    #14b8a6 75%,
+    #0f766e 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation:
+    logoWave 2.4s ease-in-out infinite,
+    logoFlow 3.5s linear infinite;
+  will-change: transform, background-position;
+}
+
+@keyframes logoWave {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-4px) scale(1.06); }
+}
+
+@keyframes logoFlow {
+  0%   { background-position: 200% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Delay bergelombang per huruf */
+.logo span:nth-child(1)  { animation-delay: 0s, 0s; }
+.logo span:nth-child(2)  { animation-delay: .08s, 0s; }
+.logo span:nth-child(3)  { animation-delay: .16s, 0s; }
+.logo span:nth-child(4)  { animation-delay: .24s, 0s; }
+.logo span:nth-child(5)  { animation-delay: .32s, 0s; }
+.logo span:nth-child(6)  { animation-delay: .40s, 0s; }
+.logo span:nth-child(7)  { animation-delay: .48s, 0s; }
+.logo span:nth-child(8)  { animation-delay: .56s, 0s; }
+.logo span:nth-child(9)  { animation-delay: .64s, 0s; }
+.logo span:nth-child(10) { animation-delay: .72s, 0s; }
+.logo span:nth-child(11) { animation-delay: .80s, 0s; }
   .search {
     flex: 1; min-width: 120px;
     padding: 10px 18px;
@@ -580,7 +628,9 @@
 
 <header>
   <div class="head">
-    <div class="logo">TokAMBACONG</div>
+    <div class="logo">
+  <span>T</span><span>o</span><span>k</span><span>A</span><span>M</span><span>B</span><span>A</span><span>C</span><span>O</span><span>N</span><span>G</span>
+    </div>
     <input type="text" id="cari" class="search" placeholder="Cari produk...">
     <button class="btn btn-teal cart-btn" id="btnCart">
       <span class="btn-inner">Keranjang</span>
